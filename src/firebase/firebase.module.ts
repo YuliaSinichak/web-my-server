@@ -1,20 +1,21 @@
 import { Module, Global } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 
-
-
 @Global()
 @Module({
   providers: [
     {
       provide: 'FIRESTORE',
       useFactory: () => {
-        // Initialize app only once
         if (admin.apps.length === 0) {
+          // Parse JSON string from env var
+          const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG!);
+
+          // Fix private_key line breaks
+          serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
           admin.initializeApp({
-            credential: admin.credential.cert(
-              require('../../newwebtech-1d5e4-firebase-adminsdk-fbsvc-9c207bf547.json'),
-            ),
+            credential: admin.credential.cert(serviceAccount),
           });
         }
         return admin.firestore();
