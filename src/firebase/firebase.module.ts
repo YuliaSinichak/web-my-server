@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import * as dotenv from 'dotenv';
-dotenv.config();
+
+
 
 @Global()
 @Module({
@@ -9,15 +9,12 @@ dotenv.config();
     {
       provide: 'FIRESTORE',
       useFactory: () => {
-        if (!process.env.FIREBASE_CONFIG) {
-          throw new Error('FIREBASE_CONFIG env variable is not set');
-        }
-        const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
-        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-      
+        // Initialize app only once
         if (admin.apps.length === 0) {
           admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount),
+            credential: admin.credential.cert(
+              require('../../newwebtech-1d5e4-firebase-adminsdk-fbsvc-d30e19118f.json'),
+            ),
           });
         }
         return admin.firestore();
